@@ -23,6 +23,13 @@ type Overrides = Record<string, string | undefined>;
 /** Demo only (npm run dev sets ALFA_DEMO=true): lets the demo form pass credentials instead of .env. */
 const DEMO = process.env.ALFA_DEMO === "true";
 
+/** ALFA_ENV=live (or production) -> production APG, anything else must be "sandbox" (or unset). A typo must not silently pick a mode. */
+function baseUrl(mode = "sandbox") {
+  if (mode === "live" || mode === "production") return "https://payments.bankalfalah.com";
+  if (mode === "sandbox") return "https://sandbox.bankalfalah.com";
+  throw new Error(`ALFA_ENV must be "sandbox" or "live" (got "${mode}")`);
+}
+
 function config(o: Overrides = {}) {
   const env = (name: string) => {
     const v = (DEMO && o[name]) || process.env[name];
@@ -32,9 +39,7 @@ function config(o: Overrides = {}) {
   const appUrl = env("ALFA_APP_URL").replace(/\/$/, "");
   return {
     appUrl,
-    base: (DEMO && o.ALFA_ENV) || process.env.ALFA_ENV
-      ? ((DEMO && o.ALFA_ENV) || process.env.ALFA_ENV) === "live" ? "https://payments.bankalfalah.com" : "https://sandbox.bankalfalah.com"
-      : "https://sandbox.bankalfalah.com",
+    base: baseUrl((DEMO && o.ALFA_ENV) || process.env.ALFA_ENV),
     merchantId: env("ALFA_MERCHANT_ID"),
     storeId: env("ALFA_STORE_ID"),
     merchantHash: env("ALFA_MERCHANT_HASH"),
@@ -74,12 +79,18 @@ async function isPaid(c: ReturnType<typeof config>, orderId: string) {
 type Cfg = ReturnType<typeof config>;
 type Spec = { path: string; fields: Record<string, string>; hashKeys: string[] };
 
-/** APG only accepts the international format: 03001234567 / 923001234567 / +923001234567 -> +923001234567 */
-function intlMobile(raw = "") {
-  const n = String(raw).replace(/[\s-]/g, "");
-  if (n.startsWith("+")) return n;
-  if (n.startsWith("0")) return `+92${n.slice(1)}`;
-  return `+${n}`;
+/**
+ * APG only accepts international format with a leading "+": +923001234567.
+ * Accepts 0300 1234567, 03001234567, 3001234567, 923001234567, 00923001234567, +92 300 1234567, (0300) 123-4567.
+ * Returns null when it can't be a Pakistani mobile number (country is fixed to Pakistan).
+ */
+function pkMobile(raw: unknown): string | null {
+  let n = String(raw ?? "").trim().replace(/[^\d+]/g, "");
+  n = n.startsWith("+") ? n.slice(1) : n.startsWith("00") ? n.slice(2) : n;
+  n = n.replace(/\+/g, "");
+  if (n.startsWith("0")) n = `92${n.slice(1)}`;
+  else if (/^3\d{9}$/.test(n)) n = `92${n}`;
+  return /^923\d{9}$/.test(n) ? `+${n}` : null;
 }
 
 // The three REST calls. `hashKeys` = the exact fields (and order) APG hashes; the JSON body carries all `fields`.
@@ -115,7 +126,7 @@ const transactionSpec = (c: Cfg, i: Record<string, any>): Spec => ({
     TransactionTypeId: String(i.type ?? "1"),
     TransactionReferenceNumber: i.orderId,
     TransactionAmount: String(Math.round(Number(i.amount))),
-    MobileNumber: intlMobile(i.mobile),
+    MobileNumber: pkMobile(i.mobile) ?? String(i.mobile ?? ""),
     AccountNumber: i.account ?? "",
     Country: String(i.country ?? "164"), // 164 = Pakistan
     EmailAddress: i.email ?? "",
@@ -179,6 +190,7 @@ async function start(req: Request, o: AlfaOptions) {
   const resolved = await resolveOrder(input, o);
   if ("error" in resolved) return resolved.error;
   const { amount, orderId } = resolved;
+  if (!pkMobile(mobile)) return Response.json({ error: "Invalid mobile number", detail: "Invalid Mobile", step: "validation" }, { status: 400 });
   const c = config(credentials);
 
   const { response: hs } = await apiCall(c, handshakeSpec(c, orderId));
