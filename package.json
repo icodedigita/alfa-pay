@@ -1,0 +1,61 @@
+{
+  "name": "alfa-pay",
+  "version": "0.1.0",
+  "description": "Bank Alfalah (APG) payments for Next.js: card redirect, Alfa Wallet and Alfalah Bank Account.",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js",
+      "require": "./dist/server.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "prepublishOnly": "tsup"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "next": ">=14"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/node": "^22.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.6.0",
+    "react": "^19.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/icodedigita/alfa-pay.git"
+  },
+  "homepage": "https://github.com/icodedigita/alfa-pay#readme",
+  "bugs": {
+    "url": "https://github.com/icodedigita/alfa-pay/issues"
+  },
+  "keywords": [
+    "bank-alfalah",
+    "alfa-payment-gateway",
+    "apg",
+    "pakistan",
+    "payments",
+    "payment-gateway",
+    "nextjs",
+    "react",
+    "typescript"
+  ]
+}
