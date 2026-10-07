@@ -1,6 +1,6 @@
 {
-  "name": "alfa-pay",
-  "version": "0.1.0",
+  "name": "@icodedigita/alfa-pay",
+  "version": "0.1.1",
   "description": "Bank Alfalah (APG) payments for Next.js: card redirect, Alfa Wallet and Alfalah Bank Account.",
   "license": "MIT",
   "type": "module",

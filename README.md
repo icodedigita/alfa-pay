@@ -1,4 +1,4 @@
-# alfa-pay
+# @icodedigita/alfa-pay
 
 Bank Alfalah (APG) payments for Next.js. Set your `.env`, add one route file, drop in `<AlfaPay />`.
 
@@ -11,7 +11,7 @@ Works with the Next.js App Router (Next 14+, React 18+).
 ## Install
 
 ```bash
-npm i alfa-pay
+npm i @icodedigita/alfa-pay
 ```
 
 ## 1. Environment
@@ -42,7 +42,7 @@ In the APG portal, set the **Return URL** to `https://your-site.com/api/alfa/ret
 `app/api/alfa/[action]/route.ts`:
 
 ```ts
-import { alfaHandlers } from "alfa-pay/server";
+import { alfaHandlers } from "@icodedigita/alfa-pay/server";
 
 export const { GET, POST } = alfaHandlers();
 ```
@@ -50,7 +50,7 @@ export const { GET, POST } = alfaHandlers();
 ## 3. Component
 
 ```tsx
-import { AlfaPay } from "alfa-pay";
+import { AlfaPay } from "@icodedigita/alfa-pay";
 
 <AlfaPay amount={2500} orderId="ORDER-1001" onSuccess={(orderId) => console.log("paid", orderId)} />
 ```
@@ -62,7 +62,7 @@ The customer chooses Card, Alfa Wallet or Alfalah Bank Account. For wallet and b
 After a card payment the customer returns to `/payment/success?order=…&status=paid` or `/payment/failed?order=…&status=failed&reason=…`. Show the result with one line on each page:
 
 ```tsx
-import { AlfaResult } from "alfa-pay";
+import { AlfaResult } from "@icodedigita/alfa-pay";
 
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   return <AlfaResult {...await searchParams} />;

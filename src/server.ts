@@ -3,7 +3,7 @@ import { createCipheriv } from "node:crypto";
 /**
  * Bank Alfalah (APG) payments, server side. Mount it once:
  *   // app/api/alfa/[action]/route.ts
- *   import { alfaHandlers } from "alfa-pay/server";
+ *   import { alfaHandlers } from "@icodedigita/alfa-pay/server";
  *   export const { GET, POST } = alfaHandlers();
  * Routes: pay (card redirect), start/confirm (Wallet & Bank Account API), return (card return).
  */
